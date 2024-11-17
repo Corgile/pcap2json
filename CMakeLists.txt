@@ -25,7 +25,7 @@ ADD_CUSTOM_COMMAND(
 SET(_packaging_dir ${PROJECT_BINARY_DIR}/target)
 SET(_packaging_filename ${PROJECT_SOURCE_DIR}/${CMAKE_BUILD_TYPE}.zip)
 ADD_CUSTOM_TARGET(
-    PackageAndOpen
+    PackAndOpen
     COMMAND ${CMAKE_COMMAND} -E make_directory "${_packaging_dir}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${TARGET_DIR}" "${_packaging_dir}"
     COMMAND ${CMAKE_COMMAND} -E tar cf ${_packaging_filename} --format=zip -- "${_packaging_dir}"

@@ -15,28 +15,30 @@
 
 namespace xlog {
 namespace detail {
-template<class T>
+template <class T>
 constexpr inline bool c_array_v = std::is_array_v<std::remove_cvref_t<T>> &&
-                                  (std::extent_v<std::remove_cvref_t<T>> > 0);
+  (std::extent_v<std::remove_cvref_t<T>> > 0);
 
-template<typename Type, typename = void>
+template <typename Type, typename = void>
 struct has_data : std::false_type {};
 
-template<typename T>
-struct has_data<T, std::void_t<decltype(std::declval<std::string>().append(
-                       std::declval<T>().data()))>> : std::true_type {};
+template <typename T>
+struct has_data<T,
+                std::void_t<decltype(std::declval<std::string>().append(
+                  std::declval<T>().data()))>> : std::true_type {};
 
-template<typename T>
+template <typename T>
 constexpr inline bool has_data_v = has_data<std::remove_cvref_t<T>>::value;
 
-template<typename Type, typename = void>
+template <typename Type, typename = void>
 struct has_str : std::false_type {};
 
-template<typename T>
-struct has_str<T, std::void_t<decltype(std::declval<std::string>().append(
-                      std::declval<T>().str()))>> : std::true_type {};
+template <typename T>
+struct has_str<T,
+               std::void_t<decltype(std::declval<std::string>().append(
+                 std::declval<T>().str()))>> : std::true_type {};
 
-template<typename T>
+template <typename T>
 constexpr inline bool has_str_v = has_str<std::remove_cvref_t<T>>::value;
 } // namespace detail
 /// @brief 一条日志记录实体类
@@ -47,10 +49,10 @@ public:
   record_t() = default;
 
   record_t(time_point_t tm_point, Level level, std::string_view str)
-      : timePoint_(tm_point),
-        level_(level),
-        tid_(getTid()),
-        fileStr_(str) {
+      : timePoint_(tm_point)
+      , level_(level)
+      , tid_(getTid())
+      , fileStr_(str) {
     content_.reserve(64);
   }
 
@@ -83,7 +85,7 @@ public:
   record_t& ref() { return *this; }
 
   ///@brief 按类型追加内容
-  template<typename T>
+  template <typename T>
   record_t& operator<<(const T& data) {
     using U = std::remove_cvref_t<T>;
     if constexpr (std::is_floating_point_v<U>) {
@@ -102,7 +104,7 @@ public:
       auto [ptr, err] = std::to_chars(buf, buf + 32, data);
       content_.append(buf, std::distance(buf, ptr));
     } else if constexpr (std::is_pointer_v<U>) {
-      char buf[32]    = {"0x"};
+      char buf[32]    = { "0x" };
       auto [ptr, err] = std::to_chars(buf + 2, buf + 32, (uintptr_t)data, 16);
       content_.append(buf, std::distance(buf, ptr));
     } else if constexpr (std::is_same_v<std::string, U> ||
@@ -126,13 +128,13 @@ public:
     return *this;
   }
 
-  template<typename... Args>
+  template <typename... Args>
   record_t& sprintf(const char* fmt, Args&&... args) {
     printf_string_format(fmt, std::forward<Args>(args)...);
     return *this;
   }
 
-  template<typename String>
+  template <typename String>
   record_t& format(String&& str) {
     content_.append(str.data());
     return *this;
@@ -142,13 +144,13 @@ public:
   void setLoggerId(size_t id) { loggerId_ = id; }
 
 private:
-  template<typename... Args>
+  template <typename... Args>
   void printf_string_format(const char* fmt, Args&&... args) {
-    size_t const size{snprintf(nullptr, 0, fmt, std::forward<Args>(args)...)};
+    size_t const size{ snprintf(nullptr, 0, fmt, std::forward<Args>(args)...) };
 #if defined(XLOG_ENABLE_PMR) and __has_include(<memory_resource> )
-    char                                arr[1024];
+    char arr[1024];
     std::pmr::monotonic_buffer_resource resource(arr, 1024);
-    std::pmr::string                    buf{&resource};
+    std::pmr::string buf{ &resource };
 #else
     std::string buf;
 #endif
@@ -159,8 +161,8 @@ private:
   }
 
   ///@brief 返回线程ID
-  unsigned int getTid() {
-    static thread_local unsigned int tid = getTidImpl();
+  static unsigned int getTid() {
+    thread_local unsigned int tid = getTidImpl();
     return tid;
   }
 
@@ -186,15 +188,15 @@ private:
   }
 
   time_point_t timePoint_;
-  Level        level_;
-  uint32_t     tid_{};
-  size_t       loggerId_{0};
-  std::string  loggerName_{logger_default_name};
-  std::string  fileStr_;
+  Level level_{ Level::TRACE };
+  uint32_t tid_{};
+  size_t loggerId_{ 0 };
+  std::string loggerName_{ logger_default_name };
+  std::string fileStr_;
 #if defined(XLOG_ENABLE_PMR) and __has_include(<memory_resource> )
-  char                                arr_[1024];
+  char arr_[1024];
   std::pmr::monotonic_buffer_resource resource_;
-  std::pmr::string                    ss_{&resource_};
+  std::pmr::string ss_{ &resource_ };
 #else
   std::string content_;
 #endif
@@ -205,9 +207,9 @@ private:
 /// 一个lambda函数的执行结果
 #define GET_STRING(filename, line)                                             \
   [] {                                                                         \
-    constexpr auto   path = refvalue::meta_string{filename};                   \
+    constexpr auto path = refvalue::meta_string{ filename };                   \
     constexpr size_t pos =                                                     \
-        path.rfind(std::filesystem::path::preferred_separator);                \
+      path.rfind(std::filesystem::path::preferred_separator);                  \
     constexpr auto name   = path.substr<pos + 1>();                            \
     constexpr auto prefix = name + ":" + TO_STR(line);          \
     return "[" + prefix + "] ";                                 \

@@ -1,5 +1,5 @@
 //
-// xlog / util.hh
+// xlog / Util.hh
 // Created by brian on 2024-06-03.
 //
 

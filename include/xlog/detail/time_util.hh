@@ -13,7 +13,11 @@
 #include <string_view>
 
 namespace xlog {
-enum class time_format { http_format, utc_format, utc_without_punctuation_format };
+enum class time_format {
+  http_format,
+  utc_format,
+  utc_without_punctuation_format
+};
 namespace time_util {
 /*
   IMF-fixdate = day-name "," SP date1 SP time-of-day SP GMT
@@ -59,81 +63,95 @@ enum component_of_time_format {
   ending
 };
 
-inline constexpr std::array<int, 17> month_table = {11, 4, -1, 7,  -1, -1, -1, 0, 6,
-                                                    3,  5, 2,  10, 8,  -1, 9,  1};
+inline constexpr std::array<int, 17> month_table = { 11, 4, -1, 7, -1, -1,
+                                                     -1, 0, 6,  3, 5,  2,
+                                                     10, 8, -1, 9, 1 };
 
-inline constexpr std::array<int, 17> week_table = {2,  4,  3,  1, -1, -1, -1, 6, -1,
-                                                   -1, -1, -1, 0, -1, -1, 5,  -1};
+inline constexpr std::array<int, 17> week_table = { 2,  4,  3,  1,  -1, -1,
+                                                    -1, 6,  -1, -1, -1, -1,
+                                                    0,  -1, -1, 5,  -1 };
 
 // Mon, 02 Jan 2006 15:04:05 GMT
 inline constexpr std::array<component_of_time_format, 32> http_time_format{
-    component_of_time_format::day_name, component_of_time_format::comma,
-    component_of_time_format::SP,       component_of_time_format::day,
-    component_of_time_format::SP,       component_of_time_format::month_name,
-    component_of_time_format::SP,       component_of_time_format::year,
-    component_of_time_format::SP,       component_of_time_format::hour,
-    component_of_time_format::colon,    component_of_time_format::minute,
-    component_of_time_format::colon,    component_of_time_format::second,
-    component_of_time_format::SP,       component_of_time_format::GMT,
-    component_of_time_format::ending};
+  component_of_time_format::day_name, component_of_time_format::comma,
+  component_of_time_format::SP,       component_of_time_format::day,
+  component_of_time_format::SP,       component_of_time_format::month_name,
+  component_of_time_format::SP,       component_of_time_format::year,
+  component_of_time_format::SP,       component_of_time_format::hour,
+  component_of_time_format::colon,    component_of_time_format::minute,
+  component_of_time_format::colon,    component_of_time_format::second,
+  component_of_time_format::SP,       component_of_time_format::GMT,
+  component_of_time_format::ending
+};
 // 2006-01-02T15:04:05.000Z
 inline constexpr std::array<component_of_time_format, 32> utc_time_format{
+  component_of_time_format::year,
+  component_of_time_format::hyphen,
+  component_of_time_format::month,
+  component_of_time_format::hyphen,
+  component_of_time_format::day,
+  component_of_time_format::T,
+  component_of_time_format::hour,
+  component_of_time_format::colon,
+  component_of_time_format::minute,
+  component_of_time_format::colon,
+  component_of_time_format::second,
+  component_of_time_format::dot,
+  component_of_time_format::second_decimal_part,
+  component_of_time_format::Z,
+  component_of_time_format::ending
+};
+// 20060102T150405000Z
+inline constexpr std::array<component_of_time_format, 32>
+  utc_time_without_punctuation_format{
     component_of_time_format::year,
-    component_of_time_format::hyphen,
     component_of_time_format::month,
-    component_of_time_format::hyphen,
     component_of_time_format::day,
     component_of_time_format::T,
     component_of_time_format::hour,
-    component_of_time_format::colon,
     component_of_time_format::minute,
-    component_of_time_format::colon,
     component_of_time_format::second,
-    component_of_time_format::dot,
     component_of_time_format::second_decimal_part,
     component_of_time_format::Z,
-    component_of_time_format::ending};
-// 20060102T150405000Z
-inline constexpr std::array<component_of_time_format, 32> utc_time_without_punctuation_format{
-    component_of_time_format::year,   component_of_time_format::month,
-    component_of_time_format::day,    component_of_time_format::T,
-    component_of_time_format::hour,   component_of_time_format::minute,
-    component_of_time_format::second, component_of_time_format::second_decimal_part,
-    component_of_time_format::Z,      component_of_time_format::ending};
+    component_of_time_format::ending
+  };
 constexpr inline int len_of_http_time_format =
-    3 + 1 + 1 + 2 + 1 + 3 + 1 + 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 3;
+  3 + 1 + 1 + 2 + 1 + 3 + 1 + 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 3;
 // ignore second_decimal_part
-constexpr inline int len_of_utc_time_format = 4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 0 + 1;
+constexpr inline int len_of_utc_time_format =
+  4 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 2 + 1 + 0 + 1;
 // ignore second_decimal_part
-constexpr inline int len_of_utc_time_without_punctuation_format = 4 + 2 + 2 + 1 + 2 + 2 + 2 + 0 + 1;
-constexpr inline std::int64_t absolute_zero_year                = -292277022399;
-constexpr inline std::int64_t days_per_100_years                = 365 * 100 + 24;
-constexpr inline std::int64_t days_per_400_years                = 365 * 400 + 97;
-constexpr inline std::int64_t days_per_4_years                  = 365 * 4 + 1;
-constexpr inline std::int64_t seconds_per_minute                = 60;
-constexpr inline std::int64_t seconds_per_hour                  = 60 * seconds_per_minute;
-constexpr inline std::int64_t seconds_per_day                   = 24 * seconds_per_hour;
-constexpr inline std::int64_t seconds_per_week                  = 7 * seconds_per_day;
-constexpr inline std::int64_t internal_year                     = 1;
+constexpr inline int len_of_utc_time_without_punctuation_format =
+  4 + 2 + 2 + 1 + 2 + 2 + 2 + 0 + 1;
+constexpr inline std::int64_t absolute_zero_year = -292277022399;
+constexpr inline std::int64_t days_per_100_years = 365 * 100 + 24;
+constexpr inline std::int64_t days_per_400_years = 365 * 400 + 97;
+constexpr inline std::int64_t days_per_4_years   = 365 * 4 + 1;
+constexpr inline std::int64_t seconds_per_minute = 60;
+constexpr inline std::int64_t seconds_per_hour   = 60 * seconds_per_minute;
+constexpr inline std::int64_t seconds_per_day    = 24 * seconds_per_hour;
+constexpr inline std::int64_t seconds_per_week   = 7 * seconds_per_day;
+constexpr inline std::int64_t internal_year      = 1;
 constexpr inline std::int64_t absolute_to_internal =
-    (absolute_zero_year - internal_year) * std::int64_t(365.2425 * seconds_per_day);
+  (absolute_zero_year - internal_year) *
+  std::int64_t(365.2425 * seconds_per_day);
 constexpr inline std::int64_t unix_to_internal =
-    (1969 * 365 + 1969 / 4 - 1969 / 100 + 1969 / 400) * seconds_per_day;
-constexpr inline std::int64_t                 internal_to_unix = -unix_to_internal;
-constexpr inline std::array<std::int32_t, 13> days_before      = {
-    0,
-    31,
-    31 + 28,
-    31 + 28 + 31,
-    31 + 28 + 31 + 30,
-    31 + 28 + 31 + 30 + 31,
-    31 + 28 + 31 + 30 + 31 + 30,
-    31 + 28 + 31 + 30 + 31 + 30 + 31,
-    31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
-    31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
-    31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
-    31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
-    31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31,
+  (1969 * 365 + 1969 / 4 - 1969 / 100 + 1969 / 400) * seconds_per_day;
+constexpr inline std::int64_t internal_to_unix            = -unix_to_internal;
+constexpr inline std::array<std::int32_t, 13> days_before = {
+  0,
+  31,
+  31 + 28,
+  31 + 28 + 31,
+  31 + 28 + 31 + 30,
+  31 + 28 + 31 + 30 + 31,
+  31 + 28 + 31 + 30 + 31 + 30,
+  31 + 28 + 31 + 30 + 31 + 30 + 31,
+  31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
+  31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
+  31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
+  31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
+  31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31,
 };
 
 inline constexpr bool is_leap(int year) {
@@ -145,7 +163,8 @@ inline constexpr int get_day_index(std::string_view str) {
 }
 
 inline constexpr int get_month_index(std::string_view str) {
-  return month_table[((str[1] & ~0x20) + (str[2] & ~0x20)) % month_table.size()];
+  return month_table[((str[1] & ~0x20) + (str[2] & ~0x20)) %
+                     month_table.size()];
 }
 
 inline constexpr int days_in(int m, int year) {
@@ -183,8 +202,9 @@ inline constexpr std::uint64_t days_since_epoch(int year) {
   return d;
 }
 
-inline std::pair<bool, std::time_t> faster_mktime(int year, int month, int day, int hour, int min,
-                                                  int sec, int day_of_week) {
+inline std::pair<bool, std::time_t> faster_mktime(int year, int month, int day,
+                                                  int hour, int min, int sec,
+                                                  int day_of_week) {
   auto d = days_since_epoch(year);
   d += std::uint64_t(days_before[month]);
   constexpr int index = get_month_index("Mar");
@@ -193,17 +213,20 @@ inline std::pair<bool, std::time_t> faster_mktime(int year, int month, int day, 
   }
   d += std::uint64_t(day - 1);
   auto abs = d * seconds_per_day;
-  abs += std::uint64_t(hour * seconds_per_hour + min * seconds_per_minute + sec);
+  abs +=
+    std::uint64_t(hour * seconds_per_hour + min * seconds_per_minute + sec);
   constexpr int day_index = get_day_index("Mon");
   if (day_of_week != -1) {
     std::int64_t wday =
-        ((abs + std::uint64_t(day_index) * seconds_per_day) % seconds_per_week) / seconds_per_day;
-    if (wday != day_of_week) { return {false, 0}; }
+      ((abs + std::uint64_t(day_index) * seconds_per_day) % seconds_per_week) /
+      seconds_per_day;
+    if (wday != day_of_week) { return { false, 0 }; }
   }
-  return {true, std::int64_t(abs) + (absolute_to_internal + internal_to_unix)};
+  return { true,
+           std::int64_t(abs) + (absolute_to_internal + internal_to_unix) };
 }
 
-template<time_format Format>
+template <time_format Format>
 inline constexpr std::array<component_of_time_format, 32> get_format() {
   if constexpr (Format == time_format::http_format) {
     return http_time_format;
@@ -214,16 +237,17 @@ inline constexpr std::array<component_of_time_format, 32> get_format() {
   }
 }
 
-template<time_format Format = time_format::http_format, typename String>
+template <time_format Format = time_format::http_format, typename String>
 inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
   using namespace time_util;
-  std::string_view const sv{gmt_time_str};
-  int                    year{}, month{}, day{}, hour{}, min{}, sec{}, day_of_week{};
-  int                    len_of_gmt_time_str   = (int)gmt_time_str.length();
-  int                    len_of_processed_part = 0;
-  int                    len_of_ignored_part   = 0; // second_decimal_part is ignored
-  char                   c;
-  constexpr std::array<component_of_time_format, 32> real_format = time_util::get_format<Format>();
+  std::string_view const sv{ gmt_time_str };
+  int year{}, month{}, day{}, hour{}, min{}, sec{}, day_of_week{};
+  int len_of_gmt_time_str   = (int)gmt_time_str.length();
+  int len_of_processed_part = 0;
+  int len_of_ignored_part   = 0; // second_decimal_part is ignored
+  char c;
+  constexpr std::array<component_of_time_format, 32> real_format =
+    time_util::get_format<Format>();
   if constexpr (Format == time_format::utc_format) {
     day_of_week = -1;
   } else if (Format == time_format::utc_without_punctuation_format) {
@@ -232,7 +256,8 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
 
   for (auto& comp : real_format) {
     switch (comp) {
-    case component_of_time_format::ending: goto travel_done;
+    case component_of_time_format::ending:
+      goto travel_done;
     case component_of_time_format::colon:
     case component_of_time_format::comma:
     case component_of_time_format::SP:
@@ -240,7 +265,9 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
     case component_of_time_format::dot:
     case component_of_time_format::T:
     case component_of_time_format::Z:
-      if (len_of_gmt_time_str - len_of_processed_part < 1) { return {false, 0}; }
+      if (len_of_gmt_time_str - len_of_processed_part < 1) {
+        return { false, 0 };
+      }
       c = sv[len_of_processed_part];
       if ((comp == component_of_time_format::Z && c != 'Z') ||
           (comp == component_of_time_format::T && c != 'T') ||
@@ -249,19 +276,26 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
           (comp == component_of_time_format::SP && c != ' ') ||
           (comp == component_of_time_format::colon && c != ':') ||
           (comp == component_of_time_format::comma && c != ',')) {
-        return {false, 0};
+        return { false, 0 };
       }
       len_of_processed_part += 1;
       break;
     case component_of_time_format::year:
-      if (len_of_gmt_time_str - len_of_processed_part < 4) { return {false, 0}; }
-      if ((year = get_digit(sv.substr(len_of_processed_part, 4), 4)) == -1) { return {false, 0}; }
+      if (len_of_gmt_time_str - len_of_processed_part < 4) {
+        return { false, 0 };
+      }
+      if ((year = get_digit(sv.substr(len_of_processed_part, 4), 4)) == -1) {
+        return { false, 0 };
+      }
       len_of_processed_part += 4;
       break;
     case component_of_time_format::month_name:
-      if (len_of_gmt_time_str - len_of_processed_part < 3) { return {false, 0}; }
-      if ((month = get_month_index(sv.substr(len_of_processed_part, 3))) == -1) {
-        return {false, 0};
+      if (len_of_gmt_time_str - len_of_processed_part < 3) {
+        return { false, 0 };
+      }
+      if ((month = get_month_index(sv.substr(len_of_processed_part, 3))) ==
+          -1) {
+        return { false, 0 };
       }
       len_of_processed_part += 3;
       break;
@@ -270,37 +304,46 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
     case component_of_time_format::second:
     case component_of_time_format::month:
     case component_of_time_format::day:
-      if (len_of_gmt_time_str - len_of_processed_part < 2) { return {false, 0}; }
+      if (len_of_gmt_time_str - len_of_processed_part < 2) {
+        return { false, 0 };
+      }
       int digit;
-      if ((digit = get_digit(sv.substr(len_of_processed_part, 2), 2)) == -1) { return {false, 0}; }
+      if ((digit = get_digit(sv.substr(len_of_processed_part, 2), 2)) == -1) {
+        return { false, 0 };
+      }
       if (comp == component_of_time_format::hour) {
         hour = digit;
-        if (hour < 0 || hour >= 24) { return {false, 0}; }
+        if (hour < 0 || hour >= 24) { return { false, 0 }; }
       } else if (comp == component_of_time_format::minute) {
         min = digit;
-        if (min < 0 || min >= 60) { return {false, 0}; }
+        if (min < 0 || min >= 60) { return { false, 0 }; }
       } else if (comp == component_of_time_format::month) {
         month = digit;
-        if (month < 1 || month > 12) { return {false, 0}; }
+        if (month < 1 || month > 12) { return { false, 0 }; }
         month--;
       } else if (comp == component_of_time_format::second) {
         sec = digit;
-        if (sec < 0 || sec >= 60) { return {false, 0}; }
+        if (sec < 0 || sec >= 60) { return { false, 0 }; }
       } else {
         day = digit;
       }
       len_of_processed_part += 2;
       break;
     case component_of_time_format::day_name:
-      if (len_of_gmt_time_str - len_of_processed_part < 3) { return {false, 0}; }
-      if ((day_of_week = get_day_index(sv.substr(len_of_processed_part, 3))) < 0) {
-        return {false, 0};
+      if (len_of_gmt_time_str - len_of_processed_part < 3) {
+        return { false, 0 };
+      }
+      if ((day_of_week = get_day_index(sv.substr(len_of_processed_part, 3))) <
+          0) {
+        return { false, 0 };
       }
       len_of_processed_part += 3;
       break;
     case component_of_time_format::GMT:
-      if (len_of_gmt_time_str - len_of_processed_part < 3) { return {false, 0}; }
-      if (sv.substr(len_of_processed_part, 3) != "GMT") { return {false, 0}; }
+      if (len_of_gmt_time_str - len_of_processed_part < 3) {
+        return { false, 0 };
+      }
+      if (sv.substr(len_of_processed_part, 3) != "GMT") { return { false, 0 }; }
       len_of_processed_part += 3;
       break;
     case component_of_time_format::second_decimal_part:
@@ -309,7 +352,7 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
         len_of_ignored_part++;
         cur++;
       }
-      if (cur == len_of_processed_part) { return {false, 0}; }
+      if (cur == len_of_processed_part) { return { false, 0 }; }
       len_of_processed_part = cur;
       break;
     }
@@ -317,21 +360,26 @@ inline std::pair<bool, std::time_t> get_timestamp(const String& gmt_time_str) {
 travel_done:
   if ((len_of_processed_part != len_of_gmt_time_str) ||
       (len_of_processed_part != len_of_http_time_format &&
-       (len_of_processed_part - len_of_ignored_part) != len_of_utc_time_format) &&
-          (len_of_processed_part - len_of_ignored_part) !=
-              len_of_utc_time_without_punctuation_format) {
-    return {false, 0};
+       (len_of_processed_part - len_of_ignored_part) !=
+         len_of_utc_time_format) &&
+        (len_of_processed_part - len_of_ignored_part) !=
+          len_of_utc_time_without_punctuation_format) {
+    return { false, 0 };
   }
-  if (day < 1 || day > days_in(month, year)) { return {false, 0}; }
+  if (day < 1 || day > days_in(month, year)) { return { false, 0 }; }
   return faster_mktime(year, month, day, hour, min, sec, day_of_week);
 }
 
-constexpr char             digits[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-constexpr std::string_view WDAY[7]    = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-constexpr std::string_view YMON[12]   = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+constexpr char digits[10] = {
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+};
+constexpr std::string_view WDAY[7]  = { "Sun", "Mon", "Tue", "Wed",
+                                        "Thu", "Fri", "Sat" };
+constexpr std::string_view YMON[12] = { "Jan", "Feb", "Mar", "Apr",
+                                        "May", "Jun", "Jul", "Aug",
+                                        "Sep", "Oct", "Nov", "Dec" };
 
-template<size_t N>
+template <size_t N>
 inline void to_int(int num, char c, char* p) {
   for (int i = 0; i < N; i++) {
     p[N - 1 - i] = digits[num % 10];
@@ -340,27 +388,16 @@ inline void to_int(int num, char c, char* p) {
   p[N] = c;
 }
 
-inline void to_year(char* buf, int year, char c) {
-  to_int<4>(year, c, buf);
-}
-inline void to_month(char* buf, int month, char c) {
-  to_int<2>(month, c, buf);
-}
-inline void to_day(char* buf, int day, char c) {
-  to_int<2>(day, c, buf);
-}
-inline void to_hour(char* buf, int day, char c) {
-  to_int<2>(day, c, buf);
-}
-inline void to_min(char* buf, int day, char c) {
-  to_int<2>(day, c, buf);
-}
-inline void to_sec(char* buf, int day, char c) {
-  to_int<2>(day, c, buf);
-}
+inline void to_year(char* buf, int year, char c) { to_int<4>(year, c, buf); }
+inline void to_month(char* buf, int month, char c) { to_int<2>(month, c, buf); }
+inline void to_day(char* buf, int day, char c) { to_int<2>(day, c, buf); }
+inline void to_hour(char* buf, int day, char c) { to_int<2>(day, c, buf); }
+inline void to_min(char* buf, int day, char c) { to_int<2>(day, c, buf); }
+inline void to_sec(char* buf, int day, char c) { to_int<2>(day, c, buf); }
 
-template<size_t Hour = 8, size_t N>
-inline std::string_view get_local_time_str(char (&buf)[N], std::time_t t, std::string_view format) {
+template <size_t Hour = 8, size_t N>
+inline std::string_view get_local_time_str(char (&buf)[N], std::time_t t,
+                                           std::string_view format) {
   static_assert(N >= 20, "wrong buf");
   struct tm* loc_time = gmtime(&t);
 
@@ -403,7 +440,7 @@ inline std::string_view get_local_time_str(char (&buf)[N], std::time_t t, std::s
 
   size_t n = p - buf - 1;
 
-  return {buf, n};
+  return { buf, n };
 }
 
 // template <size_t N>
@@ -413,14 +450,15 @@ inline std::string_view get_local_time_str(char (&buf)[N], std::time_t t, std::s
 //   return {buf, n};
 // }
 
-inline std::string_view get_local_time_str(std::chrono::system_clock::time_point t) {
-  thread_local char                 buf[32];
+inline std::string_view
+get_local_time_str(std::chrono::system_clock::time_point t) {
+  thread_local char buf[32];
   thread_local std::chrono::seconds last_sec{};
-  thread_local size_t               last_size{};
+  thread_local size_t last_size{};
 
   std::chrono::system_clock::duration d = t.time_since_epoch();
-  std::chrono::seconds                s = std::chrono::duration_cast<std::chrono::seconds>(d);
-  if (last_sec == s) { return {buf, last_size}; }
+  std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(d);
+  if (last_sec == s) { return { buf, last_size }; }
 
   auto tm = std::chrono::system_clock::to_time_t(t);
 
@@ -443,24 +481,25 @@ inline std::string_view get_local_time_str() {
 //   gmt_time); return {buf, n};
 // }
 
-template<size_t N>
+template <size_t N>
 inline std::string_view get_gmt_time_str(char (&buf)[N], std::time_t t) {
   static_assert(N >= 29, "wrong buf");
-  auto   s    = time_util::get_local_time_str<0>(buf, t, "%a, %d %b %Y %H:%M:%S");
+  auto s = time_util::get_local_time_str<0>(buf, t, "%a, %d %b %Y %H:%M:%S");
   size_t size = s.size();
   memcpy(buf + size, " GMT", 4);
 
-  return {s.data(), size + 4};
+  return { s.data(), size + 4 };
 }
 
-inline std::string_view get_gmt_time_str(std::chrono::system_clock::time_point t) {
-  static thread_local char                 buf[32];
+inline std::string_view
+get_gmt_time_str(std::chrono::system_clock::time_point t) {
+  static thread_local char buf[32];
   static thread_local std::chrono::seconds last_sec{};
-  static thread_local size_t               last_size{};
+  static thread_local size_t last_size{};
 
   std::chrono::system_clock::duration d = t.time_since_epoch();
-  std::chrono::seconds                s = std::chrono::duration_cast<std::chrono::seconds>(d);
-  if (last_sec == s) { return {buf, last_size}; }
+  std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(d);
+  if (last_sec == s) { return { buf, last_size }; }
 
   auto tm = std::chrono::system_clock::to_time_t(t);
 

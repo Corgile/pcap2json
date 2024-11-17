@@ -42,10 +42,10 @@ class ILogger {
 public:
   using sptr = std::shared_ptr<ILogger>;
 
-  virtual ~ILogger()                         = default;
-           ILogger()                         = default;
-           ILogger(const ILogger& other)     = delete;
-           ILogger(ILogger&& other) noexcept = delete;
+  virtual ~ILogger()                = default;
+  ILogger()                         = default;
+  ILogger(const ILogger& other)     = delete;
+  ILogger(ILogger&& other) noexcept = delete;
 
   ILogger& operator=(const ILogger& other)     = delete;
   ILogger& operator=(ILogger&& other) noexcept = delete;
@@ -56,9 +56,9 @@ public:
   virtual void operator+=(record_t& record) const = 0;
   virtual void flush() const                      = 0;
 
-  virtual void init(Level minLevel, bool async, bool console,
-                    std::string const& filename, size_t fileMaxSize,
-                    size_t maxFileCount, bool alwaysFlush) = 0;
+  virtual void init(Level minLevel, std::string_view filename,
+                    size_t fileMaxSize, size_t maxFileCount, bool async,
+                    bool console, bool alwaysFlush) = 0;
 
   /// 只有当 level ≥ 最低level才进行日志记录
   [[nodiscard]] virtual bool checkLevel(Level level) const = 0;
@@ -66,15 +66,15 @@ public:
   virtual void addSink(std::function<void(std::string_view)> fn) = 0;
 
   /// 停止异步日志线程
-  virtual void                stopAsyncLog() const           = 0;
-  virtual void                setMinLevel(Level level)       = 0;
-  virtual void                setConsole(bool enabled)       = 0;
-  virtual void                setAsync(bool asynced)         = 0;
-  virtual void                setName(std::string_view name) = 0;
-  virtual void                setHash(size_t const& id)      = 0;
-  [[nodiscard]] virtual Level getMinLevel() const            = 0;
-  [[nodiscard]] virtual bool  isAsynced() const              = 0;
-  [[nodiscard]] virtual bool  consoleEnabled() const         = 0;
+  virtual void stopAsyncLog() const                 = 0;
+  virtual void setMinLevel(Level level)             = 0;
+  virtual void setConsole(bool enabled)             = 0;
+  virtual void setAsync(bool asynced)               = 0;
+  virtual void setName(std::string_view name)       = 0;
+  virtual void setHash(size_t const& id)            = 0;
+  [[nodiscard]] virtual Level getMinLevel() const   = 0;
+  [[nodiscard]] virtual bool isAsynced() const      = 0;
+  [[nodiscard]] virtual bool consoleEnabled() const = 0;
 
 protected:
   void appendRecord(record_t record) const { pSink_->write(std::move(record)); }
@@ -92,11 +92,11 @@ protected:
 #else
     Level::TRACE;
 #endif
-  bool        async_         = false;
-  bool        enableConsole_ = true;
-  Sink::sptr  pSink_         = nullptr;
-  std::string loggerName_    = {};
-  size_t      id_            = 0;
+  bool async_             = false;
+  bool enableConsole_     = true;
+  Sink::sptr pSink_       = nullptr;
+  std::string loggerName_ = {};
+  size_t id_              = 0;
   /// 其他下游日志消息消费者
   std::vector<std::function<void(std::string_view)>> sinks_;
 };
@@ -106,8 +106,7 @@ class Logger final : public ILogger {
   using ptr = std::shared_ptr<Logger>;
 
 public:
-  static ILogger::sptr
-  Instance(std::string_view name = logger_default_name) {
+  static ILogger::sptr Instance(std::string_view name = logger_default_name) {
     DEV_DEBUG(std::cout << __FUNCTION__ << "  " << ID << "  " << hashed(name)
                         << "\n");
     if (allLoggers.contains(ID)) [[likely]] {
@@ -142,12 +141,11 @@ public:
   void flush() const override {
     if (pSink_) pSink_->flush();
   }
-  void init(Level minLevel, bool async, bool console,
-            std::string const& filename, size_t fileMaxSize,
-            size_t maxFileCount, bool alwaysFlush) override {
+  void init(Level minLevel, std::string_view filename, size_t fileMaxSize,
+            size_t maxFileCount, bool async, bool console,
+            bool alwaysFlush) override {
     pSink_    = std::make_shared<Sink>(filename, async, console, fileMaxSize,
                                     maxFileCount, alwaysFlush);
-    pSink_->stop();
     async_    = async;
     minLevel_ = minLevel;
     enableConsole_ = console;
@@ -172,8 +170,8 @@ public:
   void addSink(std::function<void(std::string_view)> fn) override {
     sinks_.emplace_back(std::move(fn));
   }
-  [[nodiscard]] bool  consoleEnabled() const override { return enableConsole_; }
-  [[nodiscard]] bool  isAsynced() const override { return async_; }
+  [[nodiscard]] bool consoleEnabled() const override { return enableConsole_; }
+  [[nodiscard]] bool isAsynced() const override { return async_; }
   [[nodiscard]] Level getMinLevel() const override { return minLevel_; }
 
   ~Logger() override = default;
