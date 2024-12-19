@@ -16,12 +16,13 @@ void JsonDumper::Emplace(meta_data_t const meta, pcap_data_t const pcap) {
   auto const data{ std::make_shared<PacketData>(meta, pcap) };
   pool_.enqueue([this, data] {
     if (data->Empty()) return;
+    std::scoped_lock guard{ mtx_ };
     auto& packet_list{ flows_[data->Key()] };
     packet_list.emplace_back(data);
   });
 }
 
-JsonDumper::~JsonDumper() {
+void JsonDumper::DumpFile() {
   fs::path const json_file{ file_.replace_extension(".json") };
   std::ofstream ff{ json_file, std::ios::out };
   nlohmann::json json;
@@ -34,4 +35,9 @@ JsonDumper::~JsonDumper() {
   }
   ff << json.dump(glb::argument.pretty_ ? 2 : -1);
   XLOG_INFO << "已写入文件: " << json_file;
+}
+
+JsonDumper::~JsonDumper() {
+  pool_.JoinAll();
+  DumpFile();
 }

@@ -22,7 +22,9 @@ public:
   void Emplace(meta_data_t meta, pcap_data_t pcap);
 
 private:
+  void DumpFile();
   std::vector<std::thread> workers_;
+  std::mutex mtx_;
   std::map<std::string_view, std::list<packet_data_t>> flows_;
   fs::path file_;
   ThreadPool pool_;

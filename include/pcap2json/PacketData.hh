@@ -87,8 +87,8 @@ private: // NOLINT 解析后
   std::string key_;
   std::string addr_src_;
   std::string addr_dst_;
-  std::string timestamp_;
-  std::string packet_len_;
+  // std::string timestamp_;
+  // std::string packet_len_;
 };
 
 using packet_data_t = std::shared_ptr<PacketData>;
