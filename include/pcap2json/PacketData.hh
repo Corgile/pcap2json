@@ -50,8 +50,8 @@ private:
   void CopyPayloadToBlob(ip const* ipv4, u_char const* trans_header,
                          std::string_view suffix, int const data_offset) {
     auto const* pHeaderType = reinterpret_cast<HeaderType const*>(trans_header);
-    auto port1{ ntohs(pHeaderType->source) };
-    auto port2{ ntohs(pHeaderType->dest) };
+    auto port1{ ::ntohs(pHeaderType->source) };
+    auto port2{ ::ntohs(pHeaderType->dest) };
     port_src_ = port1;
     port_dst_ = port2;
 

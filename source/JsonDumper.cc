@@ -7,16 +7,18 @@
 #include <utility>
 
 JsonDumper::JsonDumper(fs::path file)
-    : file_{ std::move(file) } {
+    : file_{ std::move(file) }
+    , pool_{ std::thread::hardware_concurrency() } {
   workers_.reserve(glb::argument.threads_);
 }
 
 void JsonDumper::Emplace(meta_data_t const meta, pcap_data_t const pcap) {
   auto const data{ std::make_shared<PacketData>(meta, pcap) };
-  if (data->Empty()) return;
-  auto const key{ data->Key() };
-  auto& packet_list{ flows_[key] };
-  packet_list.emplace_back(data);
+  pool_.enqueue([this, data] {
+    if (data->Empty()) return;
+    auto& packet_list{ flows_[data->Key()] };
+    packet_list.emplace_back(data);
+  });
 }
 
 JsonDumper::~JsonDumper() {

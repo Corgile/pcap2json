@@ -6,8 +6,8 @@
 #include <filesystem>
 #include <list>
 
-#include <pcap2json/Using.hh>
 #include <pcap2json/Global.hh>
+#include <pcap2json/Using.hh>
 
 namespace util {
 
@@ -24,7 +24,7 @@ void Order(T& t1, T& t2, std::function<bool()> const& less) {
   if (not less) { std::swap(t1, t2); }
 }
 
-template<typename Numeric>
+template <typename Numeric>
 auto Convert(Numeric value) -> std::string {
   const auto& target_type{ glb::type_map.at(glb::argument.type_) };
   std::ostringstream ss;

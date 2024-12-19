@@ -13,6 +13,7 @@
 
 #include <pcap2json/PacketData.hh>
 #include <pcap2json/Using.hh>
+#include <pcap2json/ThreadPool.hh>
 
 class JsonDumper {
 public:
@@ -24,6 +25,8 @@ private:
   std::vector<std::thread> workers_;
   std::map<std::string_view, std::list<packet_data_t>> flows_;
   fs::path file_;
+  ThreadPool pool_;
+
 };
 
 #endif // JSONDUMPER_HH

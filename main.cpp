@@ -9,7 +9,7 @@ int main(int const argc, char* argv[]) {
   std::vector<std::thread> threads;
   auto const concurrency{ std::thread::hardware_concurrency() / 8 + 1 };
   threads.reserve(concurrency);
-  auto files{ glb::argument.PcapFiles() };
+  auto const files{ glb::argument.PcapFiles() };
   moodycamel::ConcurrentQueue<fs::path> queue;
   queue.enqueue_bulk(files.begin(), files.size());
   for (int i{ 0 }; i < concurrency; ++i) {

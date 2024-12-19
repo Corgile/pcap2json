@@ -116,7 +116,7 @@ void PacketData::ProcessIPv4(u_char const* start) {
   if (ad1.s_addr > ad2.s_addr) { std::swap(ad1, ad2); }
   key_.append(inet_ntoa(ad1)).append("_").append(inet_ntoa(ad2)).append("_");
 
-  uint32_t const ipv4HL{ ipv4_data->ip_hl * 4 };
+  uint32_t const ipv4HL{ ipv4_data->ip_hl * 4U };
   ubytes_.append(start, ipv4HL);
 
   if (ipv4HL < 60) [[likely]] {
